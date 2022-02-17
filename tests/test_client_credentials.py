@@ -1,15 +1,13 @@
 import datetime
-from unittest.mock import patch
 
 import pytest
 
 from square_auth.client_credentials import ClientCredentials
 
 
-@patch("square_auth.client_credentials.KeycloakAPI")
 @pytest.mark.parametrize("expired", (True, False), ids=["expired", "not_expired"])
-def test_client_credentails_call(mock_keycloak_api, expired, token_pubkey_factory):
-
+def test_client_credentails_call(expired, mocker, token_pubkey_factory):
+    mock_keycloak_api = mocker.patch("square_auth.client_credentials.KeycloakAPI")
     test_realm = "test-realm"
     test_client_id = "test-client-id"
     test_client_secret = "test-client-secret"

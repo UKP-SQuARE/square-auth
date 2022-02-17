@@ -1,6 +1,4 @@
 import datetime
-from email.header import Header
-from unittest.mock import patch
 
 import pytest
 from fastapi import HTTPException
@@ -10,9 +8,9 @@ from starlette.datastructures import Headers
 from square_auth.auth import Auth
 
 @pytest.mark.asyncio
-@patch("square_auth.auth.KeycloakAPI")
 @pytest.mark.parametrize("auth_header", (True, False))
-async def test_call(mock_keycloak_api, auth_header, token_pubkey_factory):
+async def test_call(auth_header, mocker, token_pubkey_factory):
+    mock_keycloak_api = mocker.patch("square_auth.auth.KeycloakAPI")
     test_kid = "test-kid"
     test_issuer = "test-issuer"
     test_audience = "test-audience"
@@ -46,13 +44,13 @@ async def test_call(mock_keycloak_api, auth_header, token_pubkey_factory):
         with pytest.raises(HTTPException):
             await auth(request)
 
-@patch("square_auth.auth.KeycloakAPI")
 @pytest.mark.parametrize(
     "iss_valid,aud_valid",
     ((True, True), (True, False), (False, True)),
     ids=["all_valid", "audience_invalid", "issuer_invalid"],
 )
-def test_verify_token(mock_keycloak_api, iss_valid, aud_valid, token_pubkey_factory):
+def test_verify_token(iss_valid, aud_valid, mocker, token_pubkey_factory):
+    mock_keycloak_api = mocker.patch("square_auth.auth.KeycloakAPI")
     test_issuer = "test-issuer"
     test_audience = "test-audience"
     token, public_key = token_pubkey_factory(
@@ -74,9 +72,9 @@ def test_verify_token(mock_keycloak_api, iss_valid, aud_valid, token_pubkey_fact
             auth.verify_token(token, public_key)
 
 
-@patch("square_auth.auth.KeycloakAPI")
 @pytest.mark.parametrize("roles", (None, "str", ["str1", "str2"], 123))
-def test_roles_setter(mock_keycloak_api, roles):
+def test_roles_setter(roles, mocker):
+    mock_keycloak_api = mocker.patch("square_auth.auth.KeycloakAPI")
     kwargs = dict(
         keycloak_base_url="keycloak_base_url",
         realm="test-realm",
@@ -92,7 +90,6 @@ def test_roles_setter(mock_keycloak_api, roles):
             auth = Auth(**kwargs)
 
 
-@patch("square_auth.auth.KeycloakAPI")
 @pytest.mark.parametrize(
     "authorized_roles,reqesting_roles,authorized",
     (
@@ -102,8 +99,8 @@ def test_roles_setter(mock_keycloak_api, roles):
         (["roleA", "roleB"], ["roleC"], False),
     ),
 )
-def test_verify_roles(mock_keycloak_api, authorized_roles, reqesting_roles, authorized):
-
+def test_verify_roles(authorized_roles, reqesting_roles, authorized, mocker):
+    mock_keycloak_api = mocker.patch("square_auth.auth.KeycloakAPI")
     payload = dict(realm_access=dict(roles=reqesting_roles))
 
     auth = Auth(
@@ -120,10 +117,9 @@ def test_verify_roles(mock_keycloak_api, authorized_roles, reqesting_roles, auth
             auth.verify_roles(payload)
 
 
-@patch("square_auth.auth.KeycloakAPI")
 @pytest.mark.parametrize("expired", (True, False), ids=["expired", "not_expired"])
-def test_expired_token(mock_keycloak_api, expired, token_pubkey_factory):
-
+def test_expired_token(expired, token_pubkey_factory, mocker):
+    mock_keycloak_api = mocker.patch("square_auth.auth.KeycloakAPI")
     test_issuer = "test-issuer"
     test_audience = "test-audience"
 
