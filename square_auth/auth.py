@@ -44,7 +44,7 @@ class Auth(HTTPBearer):
         else:
             raise TypeError()
 
-    async def __call__(self, request: Request):
+    async def __call__(self, request: Request) -> Dict:
         """Check if the token in the request is valid and has the required roles."""
         # parse token
         authorization_credentials: HTTPAuthorizationCredentials = (
@@ -60,6 +60,8 @@ class Auth(HTTPBearer):
         
         payload: Dict = self.verify_token(encoded_token, public_key)
         self.verify_roles(payload)
+
+        return payload
 
     def verify_token(self, token: str, public_key):
         """Verifies the tokens signature, expiration, audience and issuer"""
