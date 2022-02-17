@@ -27,6 +27,7 @@ class Auth(HTTPBearer):
         self.audience: str = audience
         self.roles: List[str] = roles
 
+        self.issuer: str = f"{keycloak_base_url}/auth/realms/{self.realm}"
         self.jwks_uri = self.keycloak_api.get_keycloak_jwks_uri(self.realm)
 
     @property
