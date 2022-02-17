@@ -23,7 +23,7 @@ class KeycloakAPI():
         return jwks_uri
 
     @staticmethod
-    @lru_cache
+    @lru_cache(maxsize=1024)
     def get_public_key(kid: str, jwks_uri: str):
         """Requests public key from the Identity Provider if not cached"""
         response = requests.get(jwks_uri)
