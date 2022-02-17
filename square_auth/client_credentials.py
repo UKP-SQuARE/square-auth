@@ -14,6 +14,15 @@ class ClientCredentials:
         client_secret: str = None,
         buffer: int = 60,
     ) -> None:
+        """Obtains Access Tokens via Client Credentials flow.
+
+        Args:
+            keycloak_base_url (str): URL of the keycloak instance.
+            realm (str): Realm of the expected tokens.
+            client_id (str, optional): The Client ID used for requesting access tokens. If not provided will attempt to read from `CLIENT_ID` environment variable. Defaults to None.
+            client_secret (str, optional): The Client Secret used for requesting access tokens. If not provided will attempt to read from `CLIENT_SECERT` environment variable.. Defaults to None.
+            buffer (int, optional): Returned tokens are at least `buffer` seconds valid. Defaults to 60.
+        """
         self.keycloak_api = KeycloakAPI(keycloak_base_url)
         self.realm = realm
         self.client_id = client_id
@@ -51,7 +60,7 @@ class ClientCredentials:
         self._client_secret = value
 
     def __call__(self) -> str:
-        """Return current token or obtain new one if current token is expired."""
+        """Returns current token or obtain new one if current token is expired."""
 
         try:
             jwt.decode(
@@ -65,6 +74,7 @@ class ClientCredentials:
         return self.token
 
     def renew_token(self):
+        """Obtinas a new token from keycloak using client credentials flow"""
         self.token = self.keycloak_api.get_token_from_client_credentials(
             realm=self.realm,
             client_id=self.client_id,

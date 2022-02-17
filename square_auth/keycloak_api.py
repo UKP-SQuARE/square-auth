@@ -11,6 +11,11 @@ logger = logging.getLogger(__name__)
 class KeycloakAPI():
 
     def __init__(self, keycloak_base_url: str) -> None:
+        """Utiliy class for interacting with Keycloak
+
+        Args:
+            keycloak_base_url (str): URL of the keycloak instance.
+        """
         self.keycloak_base_url = keycloak_base_url
 
     def get_keycloak_jwks_uri(self, realm: str) -> str:
@@ -46,6 +51,7 @@ class KeycloakAPI():
         return public_key
 
     def get_token_from_client_credentials(self, realm: str, client_id: str, client_secret: str):
+        """Requests and returns new access token via client credentials flow."""
         response = requests.post(
             f"{self.keycloak_base_url}/auth/realms/{realm}/protocol/openid-connect/token",
             data=dict(

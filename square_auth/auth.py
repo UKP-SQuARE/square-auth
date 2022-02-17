@@ -19,6 +19,14 @@ class Auth(HTTPBearer):
         audience: str = None,
         roles: Union[str, List[str]] = None,
     ) -> None:
+        """Validates Access Tokens
+
+        Args:
+            keycloak_base_url (str): URL of the keycloak instance.
+            realm (str): Realm of the expected tokens.
+            audience (str, optional): If provided, __call__ will check for correct audience in the token. Defaults to None.
+            roles (Union[str, List[str]], optional): Checks whether any of the provided roles are in the token. Defaults to None.
+        """
         super().__init__()
         self.keycloak_api = KeycloakAPI(keycloak_base_url)
         self.realm: str = realm
@@ -56,7 +64,7 @@ class Auth(HTTPBearer):
         public_key = self.keycloak_api.get_public_key(
             kid=unverified_token_header["kid"], jwks_uri=self.jwks_uri
         )
-        
+
         payload: Dict = self.verify_token(encoded_token, public_key)
         self.verify_roles(payload)
 
@@ -64,7 +72,7 @@ class Auth(HTTPBearer):
 
     def verify_token(self, token: str, public_key):
         """Verifies the tokens signature, expiration, issuer (and audience if set)"""
-        
+
         decode_kwargs = dict(
             jwt=token,
             key=public_key,
@@ -86,7 +94,9 @@ class Auth(HTTPBearer):
     def verify_roles(self, payload: Dict):
         """Verify if the token contains required roles"""
 
-        if self.roles and not any(r in payload["realm_access"]["roles"] for r in self.roles):
+        if self.roles and not any(
+            r in payload["realm_access"]["roles"] for r in self.roles
+        ):
             # roles is not empty AND there has not been any overlap between roles in the
             # token and in the auth object
             raise HTTPException(401)
