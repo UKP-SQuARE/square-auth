@@ -33,7 +33,6 @@ async def test_call(auth_header, mocker, token_pubkey_factory):
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
         realm=test_realm,
-        issuer=test_issuer,
         audience=test_audience,
     )
     if auth_header:
@@ -71,7 +70,6 @@ def test_verify_token(iss_valid, aud_valid, mocker, token_pubkey_factory):
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
         realm=test_realm,
-        issuer=test_issuer,
         audience=test_audience,
     )
 
@@ -96,7 +94,6 @@ def test_verify_token_no_audience(mocker, token_pubkey_factory):
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
         realm=test_realm,
-        issuer=test_issuer,
     )
 
     auth.verify_token(token, public_key)
@@ -108,7 +105,6 @@ def test_roles_setter(roles, mocker):
     kwargs = dict(
         keycloak_base_url="keycloak_base_url",
         realm="test-realm",
-        issuer="",
         audience="",
         roles=roles,
     )
@@ -136,7 +132,6 @@ def test_verify_roles(authorized_roles, reqesting_roles, authorized, mocker):
     auth = Auth(
         keycloak_base_url="keycloak_base_url",
         realm="test-realm",
-        issuer="",
         audience="",
         roles=authorized_roles,
     )
@@ -169,7 +164,6 @@ def test_expired_token(expired, token_pubkey_factory, mocker):
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
         realm=test_realm,
-        issuer=test_issuer,
         audience=test_audience,
     )
 
