@@ -16,7 +16,6 @@ class Auth(HTTPBearer):
         self,
         keycloak_base_url: str,
         realm: str,
-        issuer: str,
         audience: str = None,
         roles: Union[str, List[str]] = None,
     ) -> None:
