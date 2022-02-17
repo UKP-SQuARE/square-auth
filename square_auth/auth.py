@@ -17,13 +17,12 @@ class Auth(HTTPBearer):
         keycloak_base_url: str,
         realm: str,
         issuer: str,
-        audience: str,
+        audience: str = None,
         roles: Union[str, List[str]] = None,
     ) -> None:
         super().__init__()
         self.keycloak_api = KeycloakAPI(keycloak_base_url)
         self.realm: str = realm
-        self.issuer: str = issuer
         self.audience: str = audience
         self.roles: List[str] = roles
 
@@ -65,15 +64,21 @@ class Auth(HTTPBearer):
         return payload
 
     def verify_token(self, token: str, public_key):
-        """Verifies the tokens signature, expiration, audience and issuer"""
+        """Verifies the tokens signature, expiration, issuer (and audience if set)"""
+        
+        decode_kwargs = dict(
+            jwt=token,
+            key=public_key,
+            algorithms=["RS256"],
+            issuer=self.issuer,
+        )
+        if self.audience:
+            decode_kwargs.update(audience=self.audience)
+        else:
+            decode_kwargs.update(options={"verify_aud": False})
+
         try:
-            payload = jwt.decode(
-                jwt=token,
-                key=public_key,
-                algorithms=["RS256"],
-                audience=self.audience,
-                issuer=self.issuer,
-            )
+            payload = jwt.decode(**decode_kwargs)
         except Exception as err:
             logger.exception(err)
             raise HTTPException(401)
