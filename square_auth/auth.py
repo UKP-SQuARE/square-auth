@@ -49,7 +49,9 @@ class Auth(HTTPBearer):
         elif isinstance(value, list):
             self._roles = value
         else:
-            raise TypeError()
+            raise TypeError(
+                f"Expected roles to be `str` or `list`, but got {type(value)}."
+            )
 
     async def __call__(self, request: Request) -> Dict:
         """Check if the token in the request is valid and has the required roles."""
