@@ -18,6 +18,7 @@ class Auth(HTTPBearer):
         keycloak_base_url: str = None,
         audience: str = None,
         roles: Union[str, List[str]] = None,
+        return_token_values: List[str] = None,
     ) -> None:
         """Validates Access Tokens
 
@@ -26,12 +27,14 @@ class Auth(HTTPBearer):
             realm (str): Realm of the expected tokens.
             audience (str, optional): If provided, __call__ will check for correct audience in the token. Defaults to None.
             roles (Union[str, List[str]], optional): Checks whether any of the provided roles are in the token. Defaults to None.
+            return_token_values (List[str]], optional): List of keys that should be added from the token payload to the return value of __call__.
+
         """
         super().__init__()
         self.keycloak_base_url = keycloak_base_url
         self.audience: str = audience
         self.roles: List[str] = roles
-
+        self.return_token_values: List[str] = return_token_values
         self.keycloak_api = KeycloakAPI(keycloak_base_url)
 
     @property
@@ -40,7 +43,7 @@ class Auth(HTTPBearer):
 
     @keycloak_base_url.setter
     def keycloak_base_url(self, value):
-        
+
         if value is None:
             value = os.getenv("KEYCLOAK_BASE_URL", None)
             if value is None:
@@ -90,7 +93,9 @@ class Auth(HTTPBearer):
         payload: Dict = self.verify_token(encoded_token, public_key, expected_issuer)
         self.verify_roles(payload)
 
-        return payload
+        return self.prepare_return_from_payload(
+            payload=payload, realm=realm, keys=self.return_token_values
+        )
 
     def verify_token(self, token: str, public_key, expected_issuer: str) -> Dict:
         """Verifies the tokens signature, expiration, issuer (and audience if set)"""
@@ -126,9 +131,19 @@ class Auth(HTTPBearer):
     @staticmethod
     def get_realm_from_token(token: str) -> str:
         payload = jwt.decode(token, options=dict(verify_signature=False))
-        realm = payload["iss"][payload["iss"].rfind("/")+1:]
+        realm = payload["iss"][payload["iss"].rfind("/") + 1 :]
 
         return realm
-    
+
     def get_expected_issuer(self, realm: str) -> str:
         return f"{self.keycloak_base_url}/auth/realms/{realm}"
+
+    @staticmethod
+    def prepare_return_from_payload(payload: Dict, realm: str, keys: List[str] = None) -> Dict:
+        return_dict: Dict = dict(realm=realm, username=payload["preferred_username"])
+        if keys is None:
+            keys = []
+        for k in keys:
+            return_dict.update({k: payload[k]})
+
+        return return_dict
