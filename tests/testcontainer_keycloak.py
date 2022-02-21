@@ -5,14 +5,14 @@ from testcontainers.core.waiting_utils import wait_container_is_ready
 
 logger = logging.getLogger(__name__)
 
-class TestcontainerKeycloak(DockerContainer):
 
+class TestcontainerKeycloak(DockerContainer):
     def __init__(self, image, **kwargs):
         super().__init__(image, **kwargs)
         self.port_to_expose = 8080
         self.with_exposed_ports(self.port_to_expose)
         self.with_env("KEYCLOAK_USER", kwargs.get("keycloak_user", "admin"))
-        self.with_env("KEYCLOAK_PASSWORD",  kwargs.get("keycloak_password", "admin"))
+        self.with_env("KEYCLOAK_PASSWORD", kwargs.get("keycloak_password", "admin"))
 
     @wait_container_is_ready()
     def _connect(self):

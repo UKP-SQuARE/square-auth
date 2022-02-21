@@ -167,6 +167,7 @@ def test_expired_token(expired, token_pubkey_factory, mocker):
     else:
         auth.verify_token(token, public_key, expected_issuer=test_issuer)
 
+
 def get_realm_from_token(token_pubkey_factory):
     expected_realm_name = "test-realm"
     token, _ = token_pubkey_factory(
@@ -174,5 +175,3 @@ def get_realm_from_token(token_pubkey_factory):
     )
     actual_realm_name = Auth.get_realm_from_token(token)
     assert expected_realm_name == actual_realm_name
-
-

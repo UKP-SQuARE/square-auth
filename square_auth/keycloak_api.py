@@ -8,8 +8,8 @@ from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
-class KeycloakAPI():
 
+class KeycloakAPI:
     def __init__(self, keycloak_base_url: str) -> None:
         """Utiliy class for interacting with Keycloak
 
@@ -25,7 +25,7 @@ class KeycloakAPI():
             f"{self.keycloak_base_url}/auth/realms/{realm}/.well-known/openid-configuration"
         )
         jwks_uri = response.json()["jwks_uri"]
-        
+
         return jwks_uri
 
     @staticmethod
@@ -51,7 +51,9 @@ class KeycloakAPI():
 
         return public_key
 
-    def get_token_from_client_credentials(self, realm: str, client_id: str, client_secret: str):
+    def get_token_from_client_credentials(
+        self, realm: str, client_id: str, client_secret: str
+    ):
         """Requests and returns new access token via client credentials flow."""
         response = requests.post(
             f"{self.keycloak_base_url}/auth/realms/{realm}/protocol/openid-connect/token",

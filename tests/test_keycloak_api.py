@@ -7,6 +7,7 @@ from keycloak import KeycloakAdmin, KeycloakOpenID
 from square_auth.keycloak_api import KeycloakAPI
 from tests.testcontainer_keycloak import TestcontainerKeycloak
 
+
 @pytest.fixture(scope="session")
 def keycloak():
     with TestcontainerKeycloak("jboss/keycloak:16.1.1") as kc:
@@ -118,7 +119,7 @@ def create_client_credentials_factory():
                 "protocol": "openid-connect",
                 **kwargs,
             },
-            skip_exists=True
+            skip_exists=True,
         )
 
     return create_client
@@ -186,5 +187,7 @@ def test_get_token_from_client_credentials(
     jwks_uri = keycloak_api.get_keycloak_jwks_uri(realm=test_realm)
     public_key = keycloak_api.get_public_key(kid=header["kid"], jwks_uri=jwks_uri)
 
-    payload = jwt.decode(token, public_key, algorithms=["RS256"], options={"verify_aud": False})
+    payload = jwt.decode(
+        token, public_key, algorithms=["RS256"], options={"verify_aud": False}
+    )
     assert payload["clientId"] == test_client_id

@@ -139,7 +139,9 @@ class Auth(HTTPBearer):
         return f"{self.keycloak_base_url}/auth/realms/{realm}"
 
     @staticmethod
-    def prepare_return_from_payload(payload: Dict, realm: str, keys: List[str] = None) -> Dict:
+    def prepare_return_from_payload(
+        payload: Dict, realm: str, keys: List[str] = None
+    ) -> Dict:
         return_dict: Dict = dict(realm=realm, username=payload["preferred_username"])
         if keys is None:
             keys = []
