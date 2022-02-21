@@ -17,8 +17,6 @@ app = FastAPI()
 
 auth = Auth(
     keycloak_base_url="http://localhost:8080",
-    realm="test-realm",
-    issuer="http://localhost:8080/auth/realms/test-realm",
     audience="audience",
     roles="user",
 )
@@ -27,6 +25,8 @@ auth = Auth(
 def get_items(token = Depends(auth)):
     return ["apple", "orange"]
 ```
+
+The arguments to `Auth` are optional. The keycloak_base_url can be set via the environment variable `KEYCLOAK_BASE_URL`. If audience is not set, the `aud` field in the token will not be checked. If roles is not set, no check on the roles will be performed.
 
 ## Client Tokens
 In order for services to access protected resources they also require an access token. A service can obtain a token from the identity provider by using the Client Credentials flow. For this the client first needs to be registered at the identity provider, where also the `client_id` and the `client_secret` will be issued. Given these credentials, tokens can be requested and used to ccess protected resources.

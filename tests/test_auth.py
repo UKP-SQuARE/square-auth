@@ -32,7 +32,6 @@ async def test_call(auth_header, mocker, token_pubkey_factory):
 
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
-        realm=test_realm,
         audience=test_audience,
     )
     if auth_header:
@@ -63,21 +62,20 @@ def test_verify_token(iss_valid, aud_valid, mocker, token_pubkey_factory):
     test_issuer = f"{keycloak_base_url}/auth/realms/{test_realm}"
     test_audience = "test-audience"
     token, public_key = token_pubkey_factory(
-        iss=test_issuer if iss_valid else "invalid-issuer",
+        iss=test_issuer if iss_valid else test_issuer + "-invalid",
         aud=test_audience if aud_valid else "invalid-audience",
     )
 
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
-        realm=test_realm,
         audience=test_audience,
     )
 
     if iss_valid and aud_valid:
-        auth.verify_token(token, public_key)
+        auth.verify_token(token, public_key, expected_issuer=test_issuer)
     else:
         with pytest.raises(HTTPException):
-            auth.verify_token(token, public_key)
+            auth.verify_token(token, public_key, expected_issuer=test_issuer)
 
 
 def test_verify_token_no_audience(mocker, token_pubkey_factory):
@@ -93,10 +91,9 @@ def test_verify_token_no_audience(mocker, token_pubkey_factory):
 
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
-        realm=test_realm,
     )
 
-    auth.verify_token(token, public_key)
+    auth.verify_token(token, public_key, expected_issuer=test_issuer)
 
 
 @pytest.mark.parametrize("roles", (None, "str", ["str1", "str2"], 123))
@@ -104,7 +101,6 @@ def test_roles_setter(roles, mocker):
     mock_keycloak_api = mocker.patch("square_auth.auth.KeycloakAPI")
     kwargs = dict(
         keycloak_base_url="keycloak_base_url",
-        realm="test-realm",
         audience="",
         roles=roles,
     )
@@ -131,7 +127,6 @@ def test_verify_roles(authorized_roles, reqesting_roles, authorized, mocker):
 
     auth = Auth(
         keycloak_base_url="keycloak_base_url",
-        realm="test-realm",
         audience="",
         roles=authorized_roles,
     )
@@ -163,12 +158,21 @@ def test_expired_token(expired, token_pubkey_factory, mocker):
 
     auth = Auth(
         keycloak_base_url=keycloak_base_url,
-        realm=test_realm,
         audience=test_audience,
     )
 
     if expired:
         with pytest.raises(HTTPException):
-            auth.verify_token(token, public_key)
+            auth.verify_token(token, public_key, expected_issuer=test_issuer)
     else:
-        auth.verify_token(token, public_key)
+        auth.verify_token(token, public_key, expected_issuer=test_issuer)
+
+def get_realm_from_token(token_pubkey_factory):
+    expected_realm_name = "test-realm"
+    token, _ = token_pubkey_factory(
+        iss=f"http://host:port/path/to/the/{expected_realm_name}"
+    )
+    actual_realm_name = Auth.get_realm_from_token(token)
+    assert expected_realm_name == actual_realm_name
+
+

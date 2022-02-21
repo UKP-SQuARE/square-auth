@@ -18,6 +18,7 @@ class KeycloakAPI():
         """
         self.keycloak_base_url = keycloak_base_url
 
+    @lru_cache(maxsize=1024)
     def get_keycloak_jwks_uri(self, realm: str) -> str:
         """Returns the endpoint for obtaining key certificates (public/private keys)"""
         response = requests.get(
