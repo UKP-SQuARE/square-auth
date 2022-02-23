@@ -92,6 +92,7 @@ class ClientCredentials:
                 )
         self._client_secret = value
 
+    def __call__(self) -> str:
         if self.token is None:
             self.renew_token()
 
@@ -103,12 +104,8 @@ class ClientCredentials:
             )
         except jwt.exceptions.ExpiredSignatureError:
             self.renew_token()
-
-        return_value = self.token
-        if auth_header:
-            return_value = {"Authorization": f"Bearer {self.token}"}
         
-        return return_value
+        return self.token
 
     def renew_token(self):
         """Obtinas a new token from keycloak using client credentials flow"""
