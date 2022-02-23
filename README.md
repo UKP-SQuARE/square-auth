@@ -1,5 +1,7 @@
 # SQuARE-Auth
 
+This package is part of [UKP-SQuARE](https://square.ukp-lab.de/).
+
 This package provides utilities for securting APIs and for requesting access tokens via the client credentials flow.
 
 ## API Securing
