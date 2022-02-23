@@ -47,7 +47,7 @@ class ClientCredentials:
                     "KEYCLOAK_BASE_URL environment variable."
                 )
         self._keycloak_base_url = value
-    
+
     @property
     def realm(self):
         return self._realm
@@ -106,7 +106,7 @@ class ClientCredentials:
             )
         except jwt.exceptions.ExpiredSignatureError:
             self.renew_token()
-        
+
         return self.token
 
     def renew_token(self):
