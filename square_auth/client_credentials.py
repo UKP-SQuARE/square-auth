@@ -30,7 +30,7 @@ class ClientCredentials:
         self.buffer = buffer
 
         self.keycloak_api = KeycloakAPI(keycloak_base_url)
-        self.token = self.renew_token()
+        self.token = None
 
     @property
     def keycloak_base_url(self):
@@ -92,8 +92,8 @@ class ClientCredentials:
                 )
         self._client_secret = value
 
-    def __call__(self, auth_header: bool = False) -> str:
-        """Returns current token or obtain new one if current token is expired."""
+        if self.token is None:
+            self.renew_token()
 
         try:
             jwt.decode(
