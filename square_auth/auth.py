@@ -24,7 +24,6 @@ class Auth(HTTPBearer):
 
         Args:
             keycloak_base_url (str): URL of the keycloak instance, if not set, will attempt to read from KEYCLOAK_BASE_URL environment variable.
-            realm (str): Realm of the expected tokens.
             audience (str, optional): If provided, __call__ will check for correct audience in the token. Defaults to None.
             roles (Union[str, List[str]], optional): Checks whether any of the provided roles are in the token. Defaults to None.
             return_token_values (List[str]], optional): List of keys that should be added from the token payload to the return value of __call__.
