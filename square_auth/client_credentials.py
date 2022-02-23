@@ -93,6 +93,8 @@ class ClientCredentials:
         self._client_secret = value
 
     def __call__(self) -> str:
+        """Returns access token that is at least `self.buffer` seconds valid."""
+
         if self.token is None:
             self.renew_token()
 
