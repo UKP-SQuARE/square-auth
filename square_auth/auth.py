@@ -34,7 +34,7 @@ class Auth(HTTPBearer):
         self.audience: str = audience
         self.roles: List[str] = roles
         self.return_token_values: List[str] = return_token_values
-        self.keycloak_api = KeycloakAPI(keycloak_base_url)
+        self.keycloak_api = KeycloakAPI(self.keycloak_base_url)
 
     @property
     def keycloak_base_url(self):

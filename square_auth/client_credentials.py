@@ -29,7 +29,7 @@ class ClientCredentials:
         self.client_secret = client_secret
         self.buffer = buffer
 
-        self.keycloak_api = KeycloakAPI(keycloak_base_url)
+        self.keycloak_api = KeycloakAPI(self.keycloak_base_url)
         self.token = None
 
     @property
