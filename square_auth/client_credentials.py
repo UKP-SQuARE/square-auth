@@ -12,7 +12,7 @@ class ClientCredentials:
         realm: str = None,
         client_id: str = None,
         client_secret: str = None,
-        buffer: int = 60,
+        buffer: int = 30,
     ) -> None:
         """Obtains Access Tokens via Client Credentials flow.
 
@@ -21,7 +21,7 @@ class ClientCredentials:
             keycloak_base_url (str, optional): URL of the keycloak instance, if not set, will attempt to read from `KEYCLOAK_BASE_URL` environment variable. Defaults to None.
             client_id (str, optional): The Client ID used for requesting access tokens. If not set, will attempt to read from `CLIENT_ID` environment variable. Defaults to None.
             client_secret (str, optional): The Client Secret used for requesting access tokens. If not set, will attempt to read from `CLIENT_SECERT` environment variable. Defaults to None.
-            buffer (int, optional): Returned tokens are at least `buffer` seconds valid. Defaults to 60.
+            buffer (int, optional): Returned tokens are at least `buffer` seconds valid. Defaults to 30.
         """
         self.keycloak_base_url = keycloak_base_url
         self.realm = realm
