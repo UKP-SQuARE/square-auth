@@ -47,5 +47,15 @@ response = requests.get(
     "http://localhost/api/protcted-resource", 
     headers={"Authorization": f"Bearer {client_credentials()}"}
 )
-
 ```
+### Register a Client in Keycloak
+1. Login to the admin console of Keycloak.
+2. Select the realm where you want the Client to be created.
+3. Go to Clients, and click create.
+4. Enter a Client ID, ideally this should be similar to the service/application using the client.
+5. In the client settings:
+    - Set the Access Type to confidential
+    - Disable Standard Flow and Direct Access Grant
+    - Enable Service Accounts
+    - Save
+6. In the credentials tab you will find the current Client Secret. Regenerate the secret if it has been leaked accidentally. 
