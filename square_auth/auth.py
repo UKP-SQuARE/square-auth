@@ -110,6 +110,9 @@ class Auth(HTTPBearer):
         else:
             decode_kwargs.update(options={"verify_aud": False})
 
+        if os.getenv("VERIFY_ISSUER", "1") != "1":
+            decode_kwargs.update(options={"verify_iss": False})
+
         try:
             payload = jwt.decode(**decode_kwargs)
         except Exception as err:
