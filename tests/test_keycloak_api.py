@@ -2,6 +2,7 @@ import uuid
 
 import jwt
 import pytest
+import responses
 from keycloak import KeycloakAdmin, KeycloakOpenID
 
 from square_auth.keycloak_api import KeycloakAPI
@@ -138,6 +139,24 @@ def test_auth_jwks_uri(keycloak, create_realm_factory):
         f"{keycloak_base_url}/auth/realms/{test_realm}/protocol/openid-connect/certs"
     )
     assert actual_jwks_uri == expected_jwks_uri
+
+@responses.activate
+def test_auth_jwks_uri_with_different_netloc():
+
+    test_realm = "test-realm-jwks-uri-different"
+    keycloak_base_url = "http://keycloak:8080"
+
+    keycloak_api = KeycloakAPI(keycloak_base_url)
+    expected_jwks_uri = (
+        f"{{base_url}}/auth/realms/{test_realm}/protocol/openid-connect/certs"
+    )
+    responses.get(
+        url=f"{keycloak_base_url}/auth/realms/{test_realm}/.well-known/openid-configuration",
+        json={"jwks_uri": expected_jwks_uri.format(base_url="https://some-other-net")}
+    )
+    actual_jwks_uri = keycloak_api.get_keycloak_jwks_uri(test_realm)
+    
+    assert actual_jwks_uri == expected_jwks_uri.format(base_url=keycloak_base_url)
 
 
 def test_get_public_key(
