@@ -31,11 +31,10 @@ class KeycloakAPI:
         # if true replace host
         jwks_parsed_uri = urlparse(jwks_uri)
         keycloak_parsed_url = urlparse(self.keycloak_base_url)
-        if  jwks_parsed_uri.netloc != keycloak_parsed_url.netloc:
+        if jwks_parsed_uri.netloc != keycloak_parsed_url.netloc:
             jwks_uri = jwks_parsed_uri._replace(
                 scheme=keycloak_parsed_url.scheme, netloc=keycloak_parsed_url.netloc
             ).geturl()
-
 
         return jwks_uri
 
