@@ -1,5 +1,6 @@
 from functools import lru_cache
 from typing import Dict, List
+from urllib.parse import urlparse
 import logging
 
 import requests
@@ -25,6 +26,16 @@ class KeycloakAPI:
             f"{self.keycloak_base_url}/auth/realms/{realm}/.well-known/openid-configuration"
         )
         jwks_uri = response.json()["jwks_uri"]
+
+        # check if keycloak base url is differnt from return jwks uri
+        # if true replace host
+        jwks_parsed_uri = urlparse(jwks_uri)
+        keycloak_parsed_url = urlparse(self.keycloak_base_url)
+        if  jwks_parsed_uri.netloc != keycloak_parsed_url.netloc:
+            jwks_uri = jwks_parsed_uri._replace(
+                scheme=keycloak_parsed_url.scheme, netloc=keycloak_parsed_url.netloc
+            ).geturl()
+
 
         return jwks_uri
 
