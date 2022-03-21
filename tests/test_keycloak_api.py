@@ -151,7 +151,8 @@ def test_auth_jwks_uri_with_different_netloc():
     expected_jwks_uri = (
         f"{{base_url}}/auth/realms/{test_realm}/protocol/openid-connect/certs"
     )
-    responses.get(
+    responses.add(
+        method=responses.GET,
         url=f"{keycloak_base_url}/auth/realms/{test_realm}/.well-known/openid-configuration",
         json={"jwks_uri": expected_jwks_uri.format(base_url="https://some-other-net")},
     )
