@@ -4,3 +4,6 @@
 .pytest_cache
 __pycache__
 *.ipynb
+build/*
+dist/*
+*.egg-info
