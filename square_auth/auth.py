@@ -105,13 +105,17 @@ class Auth(HTTPBearer):
             algorithms=["RS256"],
             issuer=expected_issuer,
         )
+        decode_kwargs_options = {}
+        
         if self.audience:
             decode_kwargs.update(audience=self.audience)
         else:
-            decode_kwargs.update(options={"verify_aud": False})
+            decode_kwargs_options.update({"verify_aud": False})
 
         if os.getenv("VERIFY_ISSUER", "1") != "1":
-            decode_kwargs.update(options={"verify_iss": False})
+            decode_kwargs_options.update({"verify_iss": False})
+
+        decode_kwargs["options"] = decode_kwargs_options
 
         try:
             payload = jwt.decode(**decode_kwargs)
