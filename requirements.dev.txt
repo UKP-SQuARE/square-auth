@@ -6,3 +6,4 @@ pytest-mock>=3.6.1
 testcontainers>=3.4.2
 python-keycloak>=0.26.1
 responses>=0.17.0
+pre-commit>=2.20.0
