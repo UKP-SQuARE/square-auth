@@ -3,6 +3,7 @@ import requests
 import jwt
 
 from square_auth.keycloak_client import KeycloakClient
+from square_auth import utils
 
 
 class ClientCredentials:
@@ -23,15 +24,20 @@ class ClientCredentials:
             client_secret (str, optional): The Client Secret used for requesting access tokens. If not set, will attempt to read from `CLIENT_SECERT` environment variable. Defaults to None.
             buffer (int, optional): Returned tokens are at least `buffer` seconds valid. Defaults to 30.
         """
-        self.keycloak_base_url = keycloak_base_url
+        self._is_local_deployment = utils.is_local_deployment()
+
         self.realm = realm
         self.client_id = client_id
         self.client_secret = client_secret
         self.buffer = buffer
 
-        self.keycloak_client = KeycloakClient(self.keycloak_base_url)
-        self.token = None
-        self.public_key = self.keycloak_client.get_public_key()
+        if self._is_local_deployment:
+            self.token, self._public_key = utils.generate_token_pubkey()
+        else:
+            self.keycloak_base_url = keycloak_base_url
+            self.keycloak_client = KeycloakClient(self.keycloak_base_url)
+            self._public_key = self.keycloak_client.get_public_key()
+            self.token = None
 
     @property
     def keycloak_base_url(self):
@@ -55,6 +61,8 @@ class ClientCredentials:
 
     @realm.setter
     def realm(self, value):
+        if self._is_local_deployment:
+            value = "LOCAL_SQUARE_REALM"
 
         if value is None:
             value = os.getenv("REALM", None)
@@ -71,6 +79,9 @@ class ClientCredentials:
 
     @client_id.setter
     def client_id(self, value):
+        if self._is_local_deployment:
+            value = "LOCAL_CLIENT_ID"
+
         if value is None:
             value = os.getenv("CLIENT_ID")
             if value is None:
@@ -85,6 +96,9 @@ class ClientCredentials:
 
     @client_secret.setter
     def client_secret(self, value):
+        if self._is_local_deployment:
+            value = "LOCAL_SQUARE_CLIENT_SECRET"
+
         if value is None:
             value = os.getenv("CLIENT_SECRET")
             if value is None:
@@ -102,7 +116,7 @@ class ClientCredentials:
         try:
             jwt.decode(
                 jwt=self.token,
-                key=self.public_key,
+                key=self._public_key,
                 options={"verify_signature": True, "verify_exp": True},
                 leway=-self.buffer,
                 algorithms=["RS256"],
@@ -114,6 +128,9 @@ class ClientCredentials:
 
     def renew_token(self):
         """Obtinas a new token from keycloak using client credentials flow"""
+        if self._is_local_deployment:
+            raise RuntimeError("Cannot renew token in local deployment")
+
         self.token = self.keycloak_client.get_token_from_client_credentials(
             realm=self.realm,
             client_id=self.client_id,

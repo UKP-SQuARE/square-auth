@@ -17,4 +17,9 @@ setup(
         "requests>=2.26.0",
         "fastapi>=0.73.0",
     ],
+    entry_points={
+        "console_scripts": [
+            "square_pk=square_auth.utils:generate_and_dump_private_key"
+        ],
+    },
 )
