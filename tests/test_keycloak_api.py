@@ -5,7 +5,7 @@ import pytest
 import responses
 from keycloak import KeycloakAdmin, KeycloakOpenID
 
-from square_auth.keycloak_api import KeycloakAPI
+from square_auth.keycloak_client import KeycloakClient
 from tests.testcontainer_keycloak import TestcontainerKeycloak
 
 
@@ -133,8 +133,8 @@ def test_auth_jwks_uri(keycloak, create_realm_factory):
 
     _ = create_realm_factory(id=test_realm, realm=test_realm)
 
-    keycloak_api = KeycloakAPI(keycloak_base_url)
-    actual_jwks_uri = keycloak_api.get_keycloak_jwks_uri(test_realm)
+    keycloak_client = KeycloakClient(keycloak_base_url)
+    actual_jwks_uri = keycloak_client.get_keycloak_jwks_uri(test_realm)
     expected_jwks_uri = (
         f"{keycloak_base_url}/auth/realms/{test_realm}/protocol/openid-connect/certs"
     )
@@ -147,7 +147,7 @@ def test_auth_jwks_uri_with_different_netloc():
     test_realm = "test-realm-jwks-uri-different"
     keycloak_base_url = "http://keycloak:8080"
 
-    keycloak_api = KeycloakAPI(keycloak_base_url)
+    keycloak_client = KeycloakClient(keycloak_base_url)
     expected_jwks_uri = (
         f"{{base_url}}/auth/realms/{test_realm}/protocol/openid-connect/certs"
     )
@@ -156,7 +156,7 @@ def test_auth_jwks_uri_with_different_netloc():
         url=f"{keycloak_base_url}/auth/realms/{test_realm}/.well-known/openid-configuration",
         json={"jwks_uri": expected_jwks_uri.format(base_url="https://some-other-net")},
     )
-    actual_jwks_uri = keycloak_api.get_keycloak_jwks_uri(test_realm)
+    actual_jwks_uri = keycloak_client.get_keycloak_jwks_uri(test_realm)
 
     assert actual_jwks_uri == expected_jwks_uri.format(base_url=keycloak_base_url)
 
@@ -180,10 +180,10 @@ def test_get_public_key(
     )
     header = jwt.get_unverified_header(token["access_token"])
 
-    keycloak_api = KeycloakAPI(keycloak_base_url)
-    jwks_uri = keycloak_api.get_keycloak_jwks_uri(realm=test_realm)
+    keycloak_client = KeycloakClient(keycloak_base_url)
+    jwks_uri = keycloak_client.get_keycloak_jwks_uri(realm=test_realm)
 
-    public_key = keycloak_api.get_public_key(kid=header["kid"], jwks_uri=jwks_uri)
+    public_key = keycloak_client.get_public_key(kid=header["kid"], jwks_uri=jwks_uri)
 
 
 def test_get_token_from_client_credentials(
@@ -199,14 +199,14 @@ def test_get_token_from_client_credentials(
         kc, clientId=test_client_id, secret=test_client_secret
     )
 
-    keycloak_api = KeycloakAPI(keycloak_base_url)
-    token = keycloak_api.get_token_from_client_credentials(
+    keycloak_client = KeycloakClient(keycloak_base_url)
+    token = keycloak_client.get_token_from_client_credentials(
         realm=test_realm, client_id=test_client_id, client_secret=test_client_secret
     )
 
     header = jwt.get_unverified_header(token)
-    jwks_uri = keycloak_api.get_keycloak_jwks_uri(realm=test_realm)
-    public_key = keycloak_api.get_public_key(kid=header["kid"], jwks_uri=jwks_uri)
+    jwks_uri = keycloak_client.get_keycloak_jwks_uri(realm=test_realm)
+    public_key = keycloak_client.get_public_key(kid=header["kid"], jwks_uri=jwks_uri)
 
     payload = jwt.decode(
         token, public_key, algorithms=["RS256"], options={"verify_aud": False}

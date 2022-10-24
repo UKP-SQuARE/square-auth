@@ -7,7 +7,7 @@ from fastapi import HTTPException
 from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.requests import Request
 
-from square_auth.keycloak_api import KeycloakAPI
+from square_auth.keycloak_client import KeycloakClient
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +34,7 @@ class Auth(HTTPBearer):
         self.audience: str = audience
         self.roles: List[str] = roles
         self.return_token_values: List[str] = return_token_values
-        self.keycloak_api = KeycloakAPI(self.keycloak_base_url)
+        self.keycloak_client = KeycloakClient(self.keycloak_base_url)
 
     @property
     def keycloak_base_url(self):
@@ -79,11 +79,11 @@ class Auth(HTTPBearer):
 
         # get realm
         realm = self.get_realm_from_token(encoded_token)
-        jwks_uri = self.keycloak_api.get_keycloak_jwks_uri(realm)
+        jwks_uri = self.keycloak_client.get_keycloak_jwks_uri(realm)
 
         # prepare validation
         unverified_token_header = jwt.get_unverified_header(encoded_token)
-        public_key = self.keycloak_api.get_public_key(
+        public_key = self.keycloak_client.get_public_key(
             kid=unverified_token_header["kid"], jwks_uri=jwks_uri
         )
         expected_issuer = self.get_expected_issuer(realm)
@@ -106,7 +106,7 @@ class Auth(HTTPBearer):
             issuer=expected_issuer,
         )
         decode_kwargs_options = {}
-        
+
         if self.audience:
             decode_kwargs.update(audience=self.audience)
         else:

@@ -2,7 +2,7 @@ import os
 import requests
 import jwt
 
-from square_auth.keycloak_api import KeycloakAPI
+from square_auth.keycloak_client import KeycloakClient
 
 
 class ClientCredentials:
@@ -29,8 +29,9 @@ class ClientCredentials:
         self.client_secret = client_secret
         self.buffer = buffer
 
-        self.keycloak_api = KeycloakAPI(self.keycloak_base_url)
+        self.keycloak_client = KeycloakClient(self.keycloak_base_url)
         self.token = None
+        self.public_key = self.keycloak_client.get_public_key()
 
     @property
     def keycloak_base_url(self):
@@ -100,18 +101,20 @@ class ClientCredentials:
 
         try:
             jwt.decode(
-                self.token,
-                options={"verify_signature": False, "verify_exp": True},
+                jwt=self.token,
+                key=self.public_key,
+                options={"verify_signature": True, "verify_exp": True},
                 leway=-self.buffer,
+                algorithms=["RS256"],
             )
-        except jwt.exceptions.ExpiredSignatureError:
+        except (jwt.exceptions.ExpiredSignatureError, TypeError):
             self.renew_token()
 
         return self.token
 
     def renew_token(self):
         """Obtinas a new token from keycloak using client credentials flow"""
-        self.token = self.keycloak_api.get_token_from_client_credentials(
+        self.token = self.keycloak_client.get_token_from_client_credentials(
             realm=self.realm,
             client_id=self.client_id,
             client_secret=self.client_secret,

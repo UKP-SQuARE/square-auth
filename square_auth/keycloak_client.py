@@ -10,7 +10,7 @@ from fastapi import HTTPException
 logger = logging.getLogger(__name__)
 
 
-class KeycloakAPI:
+class KeycloakClient:
     def __init__(self, keycloak_base_url: str) -> None:
         """Utiliy class for interacting with Keycloak
 
