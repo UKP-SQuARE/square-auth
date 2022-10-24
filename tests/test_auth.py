@@ -1,11 +1,15 @@
+import asyncio
 import datetime
+import sys
 
 import pytest
 from fastapi import HTTPException
+from fastapi.security.http import HTTPAuthorizationCredentials
 from starlette.requests import Request
 from starlette.datastructures import Headers
 
 from square_auth.auth import Auth
+from square_auth import utils
 
 
 @pytest.mark.asyncio
@@ -175,3 +179,29 @@ def get_realm_from_token(token_pubkey_factory):
     )
     actual_realm_name = Auth.get_realm_from_token(token)
     assert expected_realm_name == actual_realm_name
+
+
+@pytest.mark.asyncio
+async def test_local_deployment(monkeypatch, mocker, tmp_path):
+
+    private_key_file = tmp_path / "private_key.pem"
+    monkeypatch.setenv("SQUARE_PRIVATE_KEY_FILE", str(private_key_file))
+    utils.generate_and_dump_private_key()
+
+    token, _ = utils.generate_token_pubkey()
+    if sys.version_info[1] <= 7:
+        future = asyncio.Future()
+        future.set_result(
+            HTTPAuthorizationCredentials(scheme="http", credentials=token)
+        )
+        return_value = future
+    else:
+        return_value = HTTPAuthorizationCredentials(scheme="http", credentials=token)
+    mocker.patch(
+        "fastapi.security.http.HTTPBearer.__call__",
+        return_value=return_value,
+    )
+
+    auth = Auth()
+
+    await auth(request=None)
