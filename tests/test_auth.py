@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import sys
 
 import pytest
 from fastapi import HTTPException
@@ -188,11 +189,17 @@ async def test_local_deployment(monkeypatch, mocker, tmp_path):
     utils.generate_and_dump_private_key()
 
     token, _ = utils.generate_token_pubkey()
-    future = asyncio.Future()
-    future.set_result(HTTPAuthorizationCredentials(scheme="http", credentials=token))
+    if sys.version_info[1] <= 7:
+        future = asyncio.Future()
+        future.set_result(
+            HTTPAuthorizationCredentials(scheme="http", credentials=token)
+        )
+        return_value = future
+    else:
+        return_value = HTTPAuthorizationCredentials(scheme="http", credentials=token)
     mocker.patch(
         "fastapi.security.http.HTTPBearer.__call__",
-        return_value=future,
+        return_value=return_value,
     )
 
     auth = Auth()
