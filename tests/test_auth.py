@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 
 import pytest
@@ -187,9 +188,11 @@ async def test_local_deployment(monkeypatch, mocker, tmp_path):
     utils.generate_and_dump_private_key()
 
     token, _ = utils.generate_token_pubkey()
+    future = asyncio.Future()
+    future.set_result(HTTPAuthorizationCredentials(scheme="http", credentials=token))
     mocker.patch(
         "fastapi.security.http.HTTPBearer.__call__",
-        return_value=HTTPAuthorizationCredentials(scheme="http", credentials=token),
+        return_value=future,
     )
 
     auth = Auth()
