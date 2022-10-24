@@ -6,21 +6,25 @@ import responses
 from keycloak import KeycloakAdmin, KeycloakOpenID
 
 from square_auth.keycloak_client import KeycloakClient
-from tests.testcontainer_keycloak import TestcontainerKeycloak
+from testcontainers.keycloak import KeycloakContainer
+
+# from tests.testcontainer_keycloak import TestcontainerKeycloak
 
 
 @pytest.fixture(scope="session")
 def keycloak():
-    with TestcontainerKeycloak("jboss/keycloak:16.1.1") as kc:
+    # with TestcontainerKeycloak("jboss/keycloak:16.1.1") as kc:
+    #     yield kc
+    with KeycloakContainer("jboss/keycloak:16.1.1") as kc:
         yield kc
 
 
 @pytest.fixture(scope="session")
 def kc_master(keycloak):
     return KeycloakAdmin(
-        server_url=f"{keycloak.get_connection_url()}/auth/",
-        username="admin",
-        password="admin",
+        server_url=f"{keycloak.get_url()}/auth/",
+        username="test",
+        password="test",
         realm_name="master",
         verify=True,
     )
@@ -30,9 +34,9 @@ def kc_master(keycloak):
 def kc_realm_factory(keycloak):
     def kc_realm(realm: str):
         return KeycloakAdmin(
-            server_url=f"{keycloak.get_connection_url()}/auth/",
-            username="admin",
-            password="admin",
+            server_url=f"{keycloak.get_url()}/auth/",
+            username="test",
+            password="test",
             realm_name=realm,
             user_realm_name="master",
             verify=True,
@@ -128,7 +132,7 @@ def create_client_credentials_factory():
 
 def test_auth_jwks_uri(keycloak, create_realm_factory):
 
-    keycloak_base_url = keycloak.get_connection_url()
+    keycloak_base_url = keycloak.get_url()
     test_realm = "test-realm-jwks-uri"
 
     _ = create_realm_factory(id=test_realm, realm=test_realm)
@@ -165,7 +169,7 @@ def test_get_public_key(
     keycloak, create_realm_factory, kc_realm_factory, create_user_factory, token_factory
 ):
 
-    keycloak_base_url = keycloak.get_connection_url()
+    keycloak_base_url = keycloak.get_url()
     test_realm = "test-realm-public-key"
     test_username = "test-username"
 
@@ -189,7 +193,7 @@ def test_get_public_key(
 def test_get_token_from_client_credentials(
     keycloak, create_realm_factory, kc_realm_factory, create_client_credentials_factory
 ):
-    keycloak_base_url = keycloak.get_connection_url()
+    keycloak_base_url = keycloak.get_url()
     test_realm = "test-realm-client-credentials"
     test_client_id = "test-client"
     test_client_secret = "secret"
