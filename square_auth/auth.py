@@ -8,6 +8,7 @@ from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.requests import Request
 
 from square_auth.keycloak_client import KeycloakClient
+from square_auth import utils
 
 logger = logging.getLogger(__name__)
 
@@ -30,11 +31,16 @@ class Auth(HTTPBearer):
 
         """
         super().__init__()
-        self.keycloak_base_url = keycloak_base_url
         self.audience: str = audience
         self.roles: List[str] = roles
         self.return_token_values: List[str] = return_token_values
-        self.keycloak_client = KeycloakClient(self.keycloak_base_url)
+        self._is_local_deployment = utils.is_local_deployment()
+        if self._is_local_deployment:
+            _, self._public_key = utils.generate_token_pubkey()
+
+        if not self._is_local_deployment:
+            self.keycloak_base_url = keycloak_base_url
+            self.keycloak_client = KeycloakClient(self.keycloak_base_url)
 
     @property
     def keycloak_base_url(self):
@@ -79,13 +85,18 @@ class Auth(HTTPBearer):
 
         # get realm
         realm = self.get_realm_from_token(encoded_token)
-        jwks_uri = self.keycloak_client.get_keycloak_jwks_uri(realm)
+        if self._is_local_deployment:
+            # local deployment, skip keycloak
+            public_key = self._public_key
+        else:
+            jwks_uri = self.keycloak_client.get_keycloak_jwks_uri(realm)
 
-        # prepare validation
-        unverified_token_header = jwt.get_unverified_header(encoded_token)
-        public_key = self.keycloak_client.get_public_key(
-            kid=unverified_token_header["kid"], jwks_uri=jwks_uri
-        )
+            # prepare validation
+            unverified_token_header = jwt.get_unverified_header(encoded_token)
+            public_key = self.keycloak_client.get_public_key(
+                kid=unverified_token_header["kid"], jwks_uri=jwks_uri
+            )
+
         expected_issuer = self.get_expected_issuer(realm)
 
         # validate
@@ -112,7 +123,7 @@ class Auth(HTTPBearer):
         else:
             decode_kwargs_options.update({"verify_aud": False})
 
-        if os.getenv("VERIFY_ISSUER", "1") != "1":
+        if os.getenv("VERIFY_ISSUER", "1") != "1" or self._is_local_deployment:
             decode_kwargs_options.update({"verify_iss": False})
 
         decode_kwargs["options"] = decode_kwargs_options
@@ -142,7 +153,11 @@ class Auth(HTTPBearer):
         return realm
 
     def get_expected_issuer(self, realm: str) -> str:
-        return f"{self.keycloak_base_url}/auth/realms/{realm}"
+        if self._is_local_deployment:
+            expected_issuer = "/LOCAL_SQUAR_REALM"
+        else:
+            expected_issuer = f"{self.keycloak_base_url}/auth/realms/{realm}"
+        return expected_issuer
 
     @staticmethod
     def prepare_return_from_payload(
