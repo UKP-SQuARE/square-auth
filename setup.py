@@ -1,12 +1,14 @@
 from setuptools import setup, find_packages
 
+__version__ = "0.0.9"
+
 setup(
     name="square_auth",
-    version="0.0.7",
+    version=__version__,
     license="MIT",
     description="",
     url="https://github.com/UKP-SQuARE/square-auth",
-    download_url="https://github.com/UKP-SQuARE/square-auth/archive/refs/tags/v0.0.7.tar.gz",
+    download_url=f"https://github.com/UKP-SQuARE/square-auth/archive/refs/tags/v{__version__}.tar.gz",
     author="UKP",
     author_email="baumgaertner@ukp.informatik.tu-darmstadt.de",
     packages=find_packages(
