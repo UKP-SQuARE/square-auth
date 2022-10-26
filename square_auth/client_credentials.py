@@ -36,7 +36,6 @@ class ClientCredentials:
         else:
             self.keycloak_base_url = keycloak_base_url
             self.keycloak_client = KeycloakClient(self.keycloak_base_url)
-            self._public_key = self.keycloak_client.get_public_key()
             self.token = None
 
     @property
@@ -114,12 +113,17 @@ class ClientCredentials:
             self.renew_token()
 
         try:
+
+            decode_kwargs = {}
+            if self._is_local_deployment:
+                decode_kwargs["key"] = self._public_key
+
             jwt.decode(
                 jwt=self.token,
-                key=self._public_key,
-                options={"verify_signature": True, "verify_exp": True},
+                options={"verify_signature": False, "verify_exp": True},
                 leway=-self.buffer,
                 algorithms=["RS256"],
+                **decode_kwargs,
             )
         except (jwt.exceptions.ExpiredSignatureError, TypeError):
             self.renew_token()
