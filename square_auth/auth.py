@@ -154,7 +154,7 @@ class Auth(HTTPBearer):
 
     def get_expected_issuer(self, realm: str) -> str:
         if self._is_local_deployment:
-            expected_issuer = "/LOCAL_SQUAR_REALM"
+            expected_issuer = "/LOCAL_SQUARE_REALM"
         else:
             expected_issuer = f"{self.keycloak_base_url}/auth/realms/{realm}"
         return expected_issuer
