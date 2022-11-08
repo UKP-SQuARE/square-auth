@@ -36,11 +36,15 @@ class Auth(HTTPBearer):
         self.return_token_values: List[str] = return_token_values
         self._is_local_deployment = utils.is_local_deployment()
         if self._is_local_deployment:
+            logger.info("Running in local deployment mode.")
             _, self._public_key = utils.generate_token_pubkey()
+            logger.info("Public Key={}".format(self._public_key))
 
         if not self._is_local_deployment:
+            logger.info("Running in production mode.")
             self.keycloak_base_url = keycloak_base_url
             self.keycloak_client = KeycloakClient(self.keycloak_base_url)
+            logger.info("Keycloak Base URL={}".format(self.keycloak_base_url))
 
     @property
     def keycloak_base_url(self):
@@ -82,6 +86,7 @@ class Auth(HTTPBearer):
             await super().__call__(request)
         )
         encoded_token = authorization_credentials.credentials
+        logger.debug("Received token={}".format(encoded_token))
 
         # get realm
         realm = self.get_realm_from_token(encoded_token)
@@ -129,6 +134,7 @@ class Auth(HTTPBearer):
         decode_kwargs["options"] = decode_kwargs_options
 
         try:
+            logger.debug("Decoding token with {}".format(decode_kwargs))
             payload = jwt.decode(**decode_kwargs)
         except Exception as err:
             logger.exception(err)
