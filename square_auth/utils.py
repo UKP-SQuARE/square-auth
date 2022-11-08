@@ -1,4 +1,7 @@
 import os
+import logging
+
+logger = logging.getLogger(__name__)
 
 import jwt
 from cryptography.hazmat.backends import default_backend
@@ -6,6 +9,12 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 PRIVATE_KEY_ENV_VAR = "SQUARE_PRIVATE_KEY_FILE"
+
+
+def log_test():
+    logger.warning("This is a warning")
+    logger.info("This is a info")
+    logger.debug("This is a debug")
 
 
 def is_local_deployment():
@@ -47,16 +56,13 @@ def load_private_key():
 
 def generate_token_pubkey():
     """Generates a token and a public key for local deployment."""
-    headers = {}
     payload = {
         "preferred_username": "LOCAL_SQUARE_USER",
         "iss": "/LOCAL_SQUARE_REALM",
         "exp": 9999999999,
     }
     private_key = load_private_key()
-    token = jwt.encode(
-        headers=headers, payload=payload, key=private_key, algorithm="RS256"
-    )
+    token = jwt.encode(payload=payload, key=private_key, algorithm="RS256")
 
     public_key = private_key.public_key()
 
