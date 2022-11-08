@@ -1,9 +1,12 @@
 import os
+import logging
 import requests
 import jwt
 
 from square_auth.keycloak_client import KeycloakClient
 from square_auth import utils
+
+logger = logging.getLogger(__name__)
 
 
 class ClientCredentials:
@@ -32,11 +35,16 @@ class ClientCredentials:
         self.buffer = buffer
 
         if self._is_local_deployment:
+            logger.info("Running in local deployment mode.")
             self.token, self._public_key = utils.generate_token_pubkey()
+            logger.info("Token={}".format(self.token))
+            logger.info("Public Key={}".format(self._public_key))
         else:
+            logger.info("Running in production mode.")
             self.keycloak_base_url = keycloak_base_url
             self.keycloak_client = KeycloakClient(self.keycloak_base_url)
             self.token = None
+            logger.info("Keycloak base URL={}".format(self.keycloak_base_url))
 
     @property
     def keycloak_base_url(self):
@@ -113,7 +121,6 @@ class ClientCredentials:
             self.renew_token()
 
         try:
-
             decode_kwargs = {}
             if self._is_local_deployment:
                 decode_kwargs["key"] = self._public_key
@@ -135,6 +142,7 @@ class ClientCredentials:
         if self._is_local_deployment:
             raise RuntimeError("Cannot renew token in local deployment")
 
+        logger.debug("Requesting new token")
         self.token = self.keycloak_client.get_token_from_client_credentials(
             realm=self.realm,
             client_id=self.client_id,
