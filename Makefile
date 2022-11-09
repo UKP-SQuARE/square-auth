@@ -8,4 +8,5 @@ install-dev:
 	pre-commit install
 
 format:
-	black .
+	isort --profile black square_auth
+	black square_auth
