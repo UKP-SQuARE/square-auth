@@ -1,5 +1,5 @@
-import os
 import logging
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -48,8 +48,7 @@ def load_private_key():
     """Load the private key from the file in SQUARE_PRIVATE_KEY_FILE."""
     with open(get_private_key_file(), "rb") as key_file:
         private_key = serialization.load_pem_private_key(
-            key_file.read(),
-            password=None,
+            key_file.read(), password=None, backend=default_backend()
         )
     return private_key
 
@@ -62,8 +61,31 @@ def generate_token_pubkey():
         "exp": 9999999999,
     }
     private_key = load_private_key()
-    token = jwt.encode(payload=payload, key=private_key, algorithm="RS256")
+    private_key_bytes = private_key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+    token = jwt.encode(payload=payload, key=private_key_bytes, algorithm="RS256")
 
     public_key = private_key.public_key()
+    _ = jwt.decode(
+        jwt=token,
+        key=public_key,
+        algorithms=["RS256"],
+        options={"verify_signature": True},
+    )
 
     return token, public_key
+
+
+if __name__ == "__main__":
+    generate_and_dump_private_key()
+    token, public_key = generate_token_pubkey()
+    print("token:\n", token)
+    public_key_bytes = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
+    print("public key:")
+    print(*public_key_bytes.decode("utf-8").split("\n"), sep="\n")

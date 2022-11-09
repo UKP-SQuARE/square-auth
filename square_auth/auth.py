@@ -4,11 +4,11 @@ from typing import Dict, List, Union
 
 import jwt
 from fastapi import HTTPException
-from fastapi.security.http import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security.http import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.requests import Request
 
-from square_auth.keycloak_client import KeycloakClient
 from square_auth import utils
+from square_auth.keycloak_client import KeycloakClient
 
 logger = logging.getLogger(__name__)
 

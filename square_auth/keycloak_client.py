@@ -1,7 +1,7 @@
+import logging
 from functools import lru_cache
 from typing import Dict, List
 from urllib.parse import urlparse
-import logging
 
 import requests
 from cryptography.x509 import load_pem_x509_certificate

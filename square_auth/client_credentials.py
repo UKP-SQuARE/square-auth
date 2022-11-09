@@ -1,10 +1,10 @@
-import os
 import logging
-import requests
+import os
+
 import jwt
 
-from square_auth.keycloak_client import KeycloakClient
 from square_auth import utils
+from square_auth.keycloak_client import KeycloakClient
 
 logger = logging.getLogger(__name__)
 
