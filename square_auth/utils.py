@@ -11,12 +11,6 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 PRIVATE_KEY_ENV_VAR = "SQUARE_PRIVATE_KEY_FILE"
 
 
-def log_test():
-    logger.warning("This is a warning")
-    logger.info("This is a info")
-    logger.debug("This is a debug")
-
-
 def is_local_deployment():
     """Returns True if the deployment is local, False otherwise."""
     return os.path.exists(os.getenv(PRIVATE_KEY_ENV_VAR, ""))
