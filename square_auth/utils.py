@@ -70,16 +70,21 @@ def generate_token_pubkey():
         options={"verify_signature": True},
     )
 
-    return token, public_key
-
-
-if __name__ == "__main__":
-    generate_and_dump_private_key()
-    token, public_key = generate_token_pubkey()
-    print("token:\n", token)
     public_key_bytes = public_key.public_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PublicFormat.SubjectPublicKeyInfo,
     )
+
+    return token, public_key_bytes
+
+
+if __name__ == "__main__":
+    # generate_and_dump_private_key()
+    token, public_key = generate_token_pubkey()
+    print("token:\n", token)
+    # public_key = public_key.public_bytes(
+    #     encoding=serialization.Encoding.PEM,
+    #     format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    # )
     print("public key:")
-    print(*public_key_bytes.decode("utf-8").split("\n"), sep="\n")
+    print(*public_key.decode("utf-8").split("\n"), sep="\n")
