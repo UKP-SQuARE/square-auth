@@ -81,16 +81,12 @@ class Auth(HTTPBearer):
 
     async def __call__(self, request: Request) -> Dict:
         """Check if the token in the request is valid and has the required roles."""
-        logger.debug(
-            "Auth.__call__. Headers={} Body={}".format(request.headers, request.body)
-        )
 
         # parse token
         authorization_credentials: HTTPAuthorizationCredentials = (
             await super().__call__(request)
         )
         encoded_token = authorization_credentials.credentials
-        logger.debug("Received token={}".format(encoded_token))
 
         # get realm
         realm = self.get_realm_from_token(encoded_token)
@@ -138,7 +134,6 @@ class Auth(HTTPBearer):
         decode_kwargs["options"] = decode_kwargs_options
 
         try:
-            logger.debug("Decoding token with {}".format(decode_kwargs))
             payload = jwt.decode(**decode_kwargs)
         except Exception as err:
             logger.exception(err)

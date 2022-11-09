@@ -79,12 +79,9 @@ def generate_token_pubkey():
 
 
 if __name__ == "__main__":
-    # generate_and_dump_private_key()
+    if not os.path.exists(get_private_key_file()):
+        generate_and_dump_private_key()
     token, public_key = generate_token_pubkey()
     print("token:\n", token)
-    # public_key = public_key.public_bytes(
-    #     encoding=serialization.Encoding.PEM,
-    #     format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    # )
     print("public key:")
     print(*public_key.decode("utf-8").split("\n"), sep="\n")
