@@ -81,7 +81,9 @@ class Auth(HTTPBearer):
 
     async def __call__(self, request: Request) -> Dict:
         """Check if the token in the request is valid and has the required roles."""
-        logger.debug("Auth.__call__. Request={}".format(request))
+        logger.debug(
+            "Auth.__call__. Headers={} Body={}".format(request.headers, request.body)
+        )
 
         # parse token
         authorization_credentials: HTTPAuthorizationCredentials = (
