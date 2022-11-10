@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-__version__ = "0.0.13"
+__version__ = "0.0.14"
 
 setup(
     name="square_auth",
