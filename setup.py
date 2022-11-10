@@ -21,7 +21,8 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "square_pk=square_auth.utils:generate_and_dump_private_key"
+            "square_pk=square_auth.utils:generate_and_dump_private_key",
+            "square_token=square_auth.utils:print_token",
         ],
     },
 )
