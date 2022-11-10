@@ -47,20 +47,34 @@ def load_private_key():
     return private_key
 
 
-def generate_token_pubkey():
-    """Generates a token and a public key for local deployment."""
+def get_key_bytes(key):
+    return key.private_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PrivateFormat.PKCS8,
+        encryption_algorithm=serialization.NoEncryption(),
+    )
+
+
+def generate_token():
     payload = {
         "preferred_username": "LOCAL_SQUARE_USER",
         "iss": "/LOCAL_SQUARE_REALM",
         "exp": 9999999999,
     }
     private_key = load_private_key()
-    private_key_bytes = private_key.private_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PrivateFormat.PKCS8,
-        encryption_algorithm=serialization.NoEncryption(),
+    token = jwt.encode(
+        payload=payload, key=get_key_bytes(private_key), algorithm="RS256"
     )
-    token = jwt.encode(payload=payload, key=private_key_bytes, algorithm="RS256")
+
+    return token
+
+
+def generate_token_pubkey():
+    """Generates a token and a public key for local deployment."""
+
+    token = generate_token()
+
+    private_key = load_private_key()
 
     public_key = private_key.public_key()
     _ = jwt.decode(
@@ -76,6 +90,11 @@ def generate_token_pubkey():
     )
 
     return token, public_key_bytes
+
+
+def print_token():
+    token = generate_token()
+    print(token)
 
 
 if __name__ == "__main__":
